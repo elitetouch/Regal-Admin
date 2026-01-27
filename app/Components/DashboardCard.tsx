@@ -1,6 +1,15 @@
 import React from "react";
 import { Box, Text } from "@chakra-ui/react";
-
+type DashboardCardType = {
+  title?: string;
+  routeFunc?: () => void;
+  icon?: any;
+  Total_number?: string;
+  bgColor?: string;
+  textColor?: string;
+  partners?: string;
+  Add_Riders?: string;
+};
 function DashboardCard({
   title,
   routeFunc,
@@ -10,7 +19,7 @@ function DashboardCard({
   textColor,
   partners,
   Add_Riders,
-}) {
+}: DashboardCardType) {
   return (
     <Box
       cursor={"pointer"}

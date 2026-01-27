@@ -1,4 +1,4 @@
-import { Images } from "@/public/Images/images";
+import { Images } from "@/app/public/Images/images";
 export const HomeCardData = [
   {
     clotheName: "Ezenwanyi set",

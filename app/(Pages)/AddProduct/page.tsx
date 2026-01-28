@@ -211,10 +211,11 @@ function Page() {
     const formData = new FormData();
     formData.append("name", values.productName);
     formData.append("price", values.productPrice);
-    formData.append("image", values.ProductsImage);
+    typeof values.ProductsImage === "object" &&
+      formData.append("image", values.ProductsImage);
     formData.append("status", values.Productstatus);
     try {
-      const resp = await Api_Instance.post(`/products/${productId}`, formData, {
+      const resp = await Api_Instance.put(`/products/${productId}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

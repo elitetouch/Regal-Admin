@@ -24,7 +24,7 @@ export const getSingleProduct = (id: string) => {
   const { isPending, error, data }: any = useQuery({
     queryKey: ["singleProduct"],
     queryFn: async () => {
-      const response = await Api_Instance.get(`/products/${id}`);
+      const response = id && (await Api_Instance.get(`/products/${id}`));
       return response;
     },
   });

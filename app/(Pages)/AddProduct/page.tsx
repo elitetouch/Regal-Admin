@@ -173,7 +173,11 @@ function Page() {
     formData.append("image", values.ProductsImage);
     formData.append("status", values.Productstatus);
     try {
-      const resp = await Api_Instance.post("/products", formData);
+      const resp = await Api_Instance.post("/products", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       // Example: save token
       resp && queryClient.invalidateQueries();
@@ -210,7 +214,11 @@ function Page() {
     formData.append("image", values.ProductsImage);
     formData.append("status", values.Productstatus);
     try {
-      const resp = await Api_Instance.post(`/products/${productId}`, formData);
+      const resp = await Api_Instance.post(`/products/${productId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       // Example: save token
       resp && queryClient.invalidateQueries();
@@ -251,7 +259,7 @@ function Page() {
         }}
         onSubmit={(values: addProductTypes) => {
           console.log({ values: values });
-          singleProduct
+          !singleProduct
             ? createProductFunction(values)
             : editProductFunction(values);
           // router.push("/ProductPages");

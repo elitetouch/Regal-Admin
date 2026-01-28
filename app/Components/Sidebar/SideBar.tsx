@@ -4,9 +4,47 @@ import { Text, Button } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { Images } from "@/app/public/Images/images";
 import Image from "next/image";
-
+import { Api_Instance } from "../Api/Api";
+import { useToast } from "@chakra-ui/react";
+import { useQueryClient } from "@tanstack/react-query";
 function SideBar() {
+  const queryClient = useQueryClient();
+  const [loading, setLoading] = React.useState(false);
+  const toast = useToast();
   const router = useRouter();
+  const logOutFunction = async () => {
+    setLoading(true);
+
+    try {
+      const resp = await Api_Instance.post("/logout");
+
+      // Example: save token
+      resp && queryClient.invalidateQueries();
+      toast({
+        title: "Success",
+        description: "Log Out sucessfull",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
+      setLoading(false);
+      router.push("/");
+    } catch (error: any) {
+      console.error(error);
+      setLoading(false);
+      toast({
+        title: "Error",
+        description:
+          error.response?.data?.message ||
+          "Something went wrong. Please try again.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+      });
+    }
+  };
   return (
     <div className=" w-[250px]  min-h-[95vh] shadow-lg pl-[10px] pr-[10px]">
       <div className=" mt-[20px] ">
@@ -107,7 +145,8 @@ function SideBar() {
               borderColor={"gray.200"}
               borderRadius="lg"
               className="   w-full h-[150px] rounded-lg grid items-center bg-white "
-              onClick={() => router.push("/")}
+              onClick={() => logOutFunction()}
+              isLoading={loading}
             >
               <h1
                 style={{

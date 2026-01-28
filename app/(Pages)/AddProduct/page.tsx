@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import Image from "next/image";
 import { Images } from "@/app/public/Images/images";
 import { Text } from "@chakra-ui/react";
@@ -10,6 +11,12 @@ import { RegalIcons } from "@/app/public/Icons/Icons";
 import { Formik } from "formik";
 import { useRouter } from "next/navigation";
 import { AddProductSchemma } from "@/app/Components/Schemmas/RegalSchemma";
+import { Api_Instance } from "@/app/Components/Api/Api";
+import { useToast } from "@chakra-ui/react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { getSingleProduct } from "@/app/Components/Api/GetApi";
 type InputComponentProps = {
   name: string;
   placing: string;
@@ -20,9 +27,9 @@ type InputComponentProps = {
   onBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
 };
 type addProductTypes = {
-  productName: string;
+  productName: string | any;
 
-  productPrice: string | number;
+  productPrice: string;
   ProductsImage: any;
   Productstatus: string;
 };
@@ -144,19 +151,109 @@ const FileUploadComponent = ({
 );
 
 function Page() {
+  const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
+  const productId: any = searchParams.get("ProductId");
+  console.log({ id: productId });
+  const {
+    data: productData,
+    isPending: productPending,
+    error: productError,
+  } = getSingleProduct(productId);
+  console.log(productData?.data?.data);
+  const singleProduct = productData?.data?.data;
+  const [loading, setLoading] = React.useState(false);
+  const toast = useToast();
   const router = useRouter();
+  const createProductFunction = async (values: addProductTypes) => {
+    setLoading(true);
+    const formData = new FormData();
+    formData.append("name", values.productName);
+    formData.append("price", values.productPrice);
+    formData.append("image", values.ProductsImage);
+    formData.append("status", values.Productstatus);
+    try {
+      const resp = await Api_Instance.post("/products", formData);
+
+      // Example: save token
+      resp && queryClient.invalidateQueries();
+      toast({
+        title: "Success",
+        description: "Product created successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
+      setLoading(false);
+      router.push("/ProductPages");
+    } catch (error: any) {
+      console.error(error);
+      setLoading(false);
+      toast({
+        title: "Error",
+        description:
+          error.response?.data?.message ||
+          "Something went wrong. Please try again.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+      });
+    }
+  };
+  const editProductFunction = async (values: addProductTypes) => {
+    setLoading(true);
+    const formData = new FormData();
+    formData.append("name", values.productName);
+    formData.append("price", values.productPrice);
+    formData.append("image", values.ProductsImage);
+    formData.append("status", values.Productstatus);
+    try {
+      const resp = await Api_Instance.post(`/products/${productId}`, formData);
+
+      // Example: save token
+      resp && queryClient.invalidateQueries();
+      toast({
+        title: "Success",
+        description: "Product created successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        position: "top-right",
+      });
+      setLoading(false);
+      router.push("/ProductPages");
+    } catch (error: any) {
+      console.error(error);
+      setLoading(false);
+      toast({
+        title: "Error",
+        description:
+          error.response?.data?.message ||
+          "Something went wrong. Please try again.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+      });
+    }
+  };
   return (
     <div className="">
       <Formik
+        enableReinitialize
         initialValues={{
-          productName: "",
-
-          productPrice: "",
-          ProductsImage: null,
-          Productstatus: "",
+          productName: singleProduct ? singleProduct?.name : "",
+          productPrice: singleProduct ? singleProduct?.price : "",
+          ProductsImage: singleProduct ? singleProduct?.image_url : "",
+          Productstatus: singleProduct ? singleProduct?.status : "",
         }}
         onSubmit={(values: addProductTypes) => {
           console.log({ values: values });
+          singleProduct
+            ? createProductFunction(values)
+            : editProductFunction(values);
           // router.push("/ProductPages");
           //   router.push("/SignUp");
         }}
@@ -194,10 +291,13 @@ function Page() {
                       <InputComponent
                         name="productName"
                         label="Product Name"
-                        placing="product name"
+                        placing={
+                          singleProduct ? singleProduct?.name : "product name"
+                        }
                         value={values.productName}
                         onChange={handleChange}
                         onBlur={handleBlur}
+                        //@ts-ignore
                         error={
                           touched.productName ? errors.productName : undefined
                         }
@@ -205,10 +305,13 @@ function Page() {
                       <InputComponent
                         name="productPrice"
                         label="Product Price"
-                        placing="product price"
+                        placing={
+                          singleProduct ? singleProduct?.price : "product price"
+                        }
                         value={values.productPrice}
                         onChange={handleChange}
                         onBlur={handleBlur}
+                        //@ts-ignore
                         error={
                           touched.productPrice ? errors.productPrice : undefined
                         }
@@ -216,12 +319,17 @@ function Page() {
                       {/* <InputComponent label="Phone number" placing="Phone Number" /> */}
                       <SelectComponent
                         name="Productstatus"
-                        label="Upload product status"
-                        placing="Status"
-                        options={["In-stock", "Out of stock"]}
+                        label="Status"
+                        placing={
+                          singleProduct
+                            ? singleProduct?.status
+                            : "Upload product status"
+                        }
+                        options={["in_stock", "out_of_stock"]}
                         value={values.Productstatus}
                         onChange={handleChange}
                         onBlur={handleBlur}
+                        //@ts-ignore
                         error={
                           touched.Productstatus
                             ? errors.Productstatus
@@ -253,10 +361,17 @@ function Page() {
                         w="200px"
                         onClick={() => handleSubmit()}
                         isDisabled={!isValid}
+                        isLoading={loading}
                       >
-                        <Text className=" text-[18px]" color="white">
-                          SEND
-                        </Text>
+                        {loading ? (
+                          <Text className=" text-[18px]" color="white">
+                            Loading...
+                          </Text>
+                        ) : (
+                          <Text className=" text-[18px]" color="white">
+                            {singleProduct ? "EDIT" : "SEND"}
+                          </Text>
+                        )}
                       </Button>
                     </div>
                   </div>

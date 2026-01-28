@@ -1,9 +1,16 @@
+"use client";
 import React from "react";
 import { Box, Text } from "@chakra-ui/react";
 import { Menu, MenuList, MenuButton, IconButton } from "@chakra-ui/react";
 import Image from "next/image";
 import user from "../../public/Profile.jpg";
+import { UserContext } from "../ProjectWrap/ProjectWrap";
+import { useContext } from "react";
+import { getUser } from "../Api/GetApi";
 function Navbar() {
+  const { data, isPending, error } = getUser();
+  const profile = data?.data?.data;
+  console.log(profile);
   return (
     <Box
       style={
@@ -71,7 +78,9 @@ function Navbar() {
                 </Box>
                 <Box className=" flex justify-between w-full text-[15px]">
                   <Box>
-                    <Text className="text-[#454545]">Ashirama Senju</Text>
+                    <Text className="text-[#454545]">
+                      {profile?.name || ""}
+                    </Text>
                     <Text className=" mt-[10px] text-[#B0B0B0]">Admin</Text>
                   </Box>
                   <Box className="">

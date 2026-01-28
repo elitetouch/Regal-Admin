@@ -4,7 +4,7 @@ type DashboardCardType = {
   title?: string;
   routeFunc?: () => void;
   icon?: any;
-  Total_number?: string;
+  Total_number?: any;
   bgColor?: string;
   textColor?: string;
   partners?: string;

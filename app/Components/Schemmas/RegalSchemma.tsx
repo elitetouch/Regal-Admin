@@ -22,6 +22,7 @@ export const SignupSchemma = Yup.object().shape({
       "Enter a valid email address",
     )
     .required("Email is required"),
+  name: Yup.string().required("Name is required"),
 
   password: Yup.string()
     .min(6, "Password must be at least 6 characters")

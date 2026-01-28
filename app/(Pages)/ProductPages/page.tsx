@@ -17,7 +17,11 @@ import { IconButton } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import DashboardCard from "@/app/Components/DashboardCard";
 import { useQueryClient } from "@tanstack/react-query";
-
+import { getProducts } from "@/app/Components/Api/GetApi";
+import Loading from "@/app/Components/loading";
+import { useMemo } from "react";
+import { Api_Instance } from "@/app/Components/Api/Api";
+import { useToast } from "@chakra-ui/react";
 // // import imp from '../../main_pages/Dashboard/AddProduct'
 // import { Menu, MenuButton, MenuList, MenuItem, Button } from "@chakra-ui/react";
 // type productType = {
@@ -34,33 +38,36 @@ import { useQueryClient } from "@tanstack/react-query";
 // ];
 
 export const TableOptions = ({ id }: { id: number | string }) => {
+  const toast = useToast();
   const queryClient = useQueryClient();
   const [deleteLoader, setDeleteLoader] = useState(false);
-  const deleteFunc = (id: number) => {
-    //  setDeleteLoader(true)
-    //  axiosInstance.delete(`/api/v1/products/${id}`).then((resp)=>{
-    //    queryClient.invalidateQueries()
-    //     toast({
-    //   title: "Delete",
-    //   description: 'Order Deleted successfully',
-    //   status: "success",
-    //   duration: 5000,
-    //   isClosable: true,
-    //   position: "top-right",
-    // });
-    // setDeleteLoader(false)
-    //  }).catch((resp)=>{
-    //   let description = "Something went wrong. Please try again.";
-    //   toast({
-    //   title: "Error",
-    //    description,
-    //   status: "error",
-    //   duration: 5000,
-    //   isClosable: true,
-    //   position: "top-right",
-    // });
-    //    setDeleteLoader(false)
-    //  })
+  const deleteFunc = (id: number | string) => {
+    setDeleteLoader(true);
+    Api_Instance.delete(`/api/v1/products/${id}`)
+      .then((resp) => {
+        queryClient.invalidateQueries();
+        toast({
+          title: "Delete",
+          description: "Product Deleted successfully",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+          position: "top-right",
+        });
+        setDeleteLoader(false);
+      })
+      .catch((resp) => {
+        let description = "Something went wrong. Please try again.";
+        toast({
+          title: "Error",
+          description,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+          position: "top-right",
+        });
+        setDeleteLoader(false);
+      });
   };
   const router = useRouter();
   const [displayDropDown, setDisplayDropDown] = useState(false);
@@ -100,10 +107,7 @@ export const TableOptions = ({ id }: { id: number | string }) => {
       <IconButton
         aria-label=""
         isLoading={deleteLoader}
-        onClick={
-          () => null
-          //  deleteFunc('')
-        }
+        onClick={() => deleteFunc(id)}
         icon={
           <svg
             width="16"
@@ -270,18 +274,37 @@ export const TableOptions = ({ id }: { id: number | string }) => {
 
 function Products({}) {
   const router = useRouter();
+  const { data, error, isPending } = getProducts();
+  console.log({ productData: data?.data?.data });
+
+  console.log({ productError: error });
+  const productArray: any[] = data?.data?.data || [];
+
+  const instock = useMemo(() => {
+    return productArray.filter((item: any) => item.status === "in_stock");
+  }, [productArray]);
+  const outOfStock = useMemo(() => {
+    return productArray.filter((item: any) => item.status === "out_of_stock");
+  }, [productArray]);
+  console.log({ in_stock: instock });
+
+  console.log({ outOfStock: outOfStock });
   const column: any = [
     {
       name: "Date",
-      selector: (row: any) => <Text className="text-[12px]">{row.date}</Text>,
+      selector: (row: any) => (
+        <Text className="text-[12px]">{row.created_at}</Text>
+      ),
     },
     {
       name: "Product Name",
       selector: (row: any) => <Text className="text-[12px]">{row.name}</Text>,
     },
     {
-      name: "Items left",
-      selector: (row: any) => <Text className="text-[12px]">{row.picked}</Text>,
+      name: "Ratings",
+      selector: (row: any) => (
+        <Text className="text-[12px]">{row.ratings_count}</Text>
+      ),
     },
     {
       name: "Unit Price",
@@ -291,9 +314,9 @@ function Products({}) {
       name: "Status",
       selector: (row: any) => (
         <Text
-          className={`text-[12px] ${(row.Status === "in-stock" && "text-green-400") || (row.Status === "out-of-stock" && " text-red-600")}`}
+          className={`text-[12px] ${(row.status === "in_stock" && "text-green-400") || (row.status === "out_of_stock" && " text-red-600")}`}
         >
-          {row.Status}
+          {row.status}
         </Text>
       ),
     },
@@ -428,7 +451,7 @@ function Products({}) {
             </svg>
           }
           title={"Total Products"}
-          Total_number={"20"}
+          Total_number={productArray?.length || ""}
           bgColor={""}
           textColor={""}
           partners={""}
@@ -479,7 +502,7 @@ function Products({}) {
             </svg>
           }
           title={"In-stock"}
-          Total_number={"10"}
+          Total_number={instock?.length || ""}
           bgColor={""}
           textColor={"green"}
           partners={""}
@@ -530,7 +553,7 @@ function Products({}) {
             </svg>
           }
           title={"Out-of-stock"}
-          Total_number={"5"}
+          Total_number={outOfStock?.length || "0"}
           bgColor={""}
           textColor={"red"}
           partners={""}
@@ -581,7 +604,7 @@ function Products({}) {
             </svg>
           }
           title={"Sold"}
-          Total_number={"10"}
+          Total_number={"0"}
           bgColor={""}
           textColor={"gray"}
           partners={""}
@@ -596,15 +619,21 @@ function Products({}) {
           borderRadius="lg"
           className="pb-[20px] bg-white z-0 overflow-hidden"
         >
-          <Box position="unset" className="overflow-x-auto z-0">
-            <DataTable
-              columns={column}
-              data={Data}
-              highlightOnHover
-              customStyles={customStyles}
-              responsive
-            />
-          </Box>
+          {isPending ? (
+            <Box className=" grid justify-center pt-[20px] pb-[20px]">
+              <Text className=" text-center">Loading...</Text>
+            </Box>
+          ) : (
+            <Box position="unset" className="overflow-x-auto z-0">
+              <DataTable
+                columns={column}
+                data={productArray}
+                highlightOnHover
+                customStyles={customStyles}
+                responsive
+              />
+            </Box>
+          )}
         </Box>
       </Box>
     </Box>

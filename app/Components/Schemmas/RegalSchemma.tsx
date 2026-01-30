@@ -44,3 +44,14 @@ export const AddProductSchemma: any = Yup.object().shape({
 
   Productstatus: Yup.string().required("Product status is required"),
 });
+export const ratingsSchemma = Yup.object().shape({
+  rating: Yup.number()
+    .typeError("Rating must be a number")
+    .min(1, "Rating must be at least 1")
+    .max(5, "Rating must be at most 5")
+    .required("Rating is required"),
+
+  comment: Yup.string()
+    .min(6, "Comment must be at least 6 characters")
+    .required("Comment is required"),
+});

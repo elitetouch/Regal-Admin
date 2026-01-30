@@ -97,7 +97,10 @@ function SideBar() {
               borderColor={"gray.200"}
               borderRadius="lg"
               className="   w-full h-[150px] rounded-lg grid items-center bg-white "
-              onClick={() => router.push("/AddProduct")}
+              onClick={() => {
+                (queryClient.invalidateQueries({ queryKey: ["products"] }),
+                  router.push("/AddProduct"));
+              }}
             >
               <h1
                 style={{
@@ -121,7 +124,7 @@ function SideBar() {
               borderColor={"gray.200"}
               borderRadius="lg"
               className="   w-full h-[150px] rounded-lg grid items-center bg-white "
-              onClick={() => router.push("/Ratings")}
+              onClick={() => router.push("/AddUser")}
             >
               <h1
                 style={{
@@ -130,7 +133,7 @@ function SideBar() {
                   margin: 0,
                 }}
               >
-                Ratings
+                Add User
               </h1>
             </Button>
           </div>

@@ -2,14 +2,15 @@
 import React from "react";
 import { Box } from "@chakra-ui/react";
 import Image from "next/image";
-import { Images } from "../public/Images/images";
-import { InputComponent } from "../(Pages)/AddProduct/page";
+import { Images } from "../../public/Images/images";
+import { InputComponent } from "../AddProduct/page";
 import { Button, Text } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
-import { SignupSchemma } from "../Components/Schemmas/RegalSchemma";
+import { SignupSchemma } from "../../Components/Schemmas/RegalSchemma";
 import { Formik } from "formik";
 import { useToast } from "@chakra-ui/react";
-import { Api_Instance } from "../Components/Api/Api";
+import { Api_Instance } from "../../Components/Api/Api";
+import { robotoSlab } from "@/app/Components/Fonts/Font";
 type SignUpTypes = {
   email: string;
   name: string;
@@ -36,7 +37,7 @@ function SignUpScreen() {
 
       toast({
         title: "Success",
-        description: "Registeration successful",
+        description: "User Added Successfully",
         status: "success",
         duration: 3000,
         isClosable: true,
@@ -60,7 +61,7 @@ function SignUpScreen() {
     }
   };
   return (
-    <div className=" bg-[#5b2a2e3c] min-h-[100vh] w-full grid items-center ">
+    <div className=" w-full grid items-center h-full   lg:pt-[60px] pt-[20px]">
       <Formik
         initialValues={{
           email: "",
@@ -85,12 +86,24 @@ function SignUpScreen() {
           errors,
           touched,
         }) => (
-          <Box className=" bg-white w-5/12 rounded-lg shadow-lg m-auto">
-            <Box className=" w-10/12 m-auto pb-[40px]">
+          <Box className=" bg-white w-11/12 rounded-lg shadow-lg m-auto">
+            <Box className=" w-10/12 m-auto pb-[40px] ">
+              <div>
+                <div className={`${robotoSlab.className}`}>
+                  <Text className=" text-5xl text-[#5B2A2E] font-extrabold">
+                    Add<span className=" text-[#BE1011]"> User</span>
+                  </Text>
+                </div>
+                <div className=" mt-[20px] pb-[20px]">
+                  <Text>
+                    Please kindly input necessary details about the user
+                  </Text>
+                </div>
+              </div>
               <Box>
-                <Box className=" grid w-full justify-center pt-[20px] pb-[20px]">
+                {/* <Box className=" grid w-full justify-center pt-[20px] pb-[20px]">
                   <Image src={Images.regalLogo} alt="" />
-                </Box>
+                </Box> */}
               </Box>
               <Box className=" grid gap-y-[20px]">
                 <InputComponent
@@ -132,24 +145,26 @@ function SignUpScreen() {
                   }
                 />
               </Box>
-              <Box className=" w-full mt-[20px] m-auto">
+              <Box className=" mt-[30px] m-auto">
                 <Button
                   backgroundColor={"#5b2a2e3c"}
                   width={"full"}
+                  h="60px"
+                  w="200px"
                   onClick={() => handleSubmit()}
                   isDisabled={!isValid}
                   isLoading={loading}
                 >
-                  {loading ? <Text>Loading...</Text> : <Text>Sign up</Text>}
+                  {loading ? <Text>Loading...</Text> : <Text>Add User</Text>}
                 </Button>
-                <Box className=" grid justify-end mt-[20px]">
+                {/* <Box className=" grid justify-end mt-[20px]">
                   <Button
                     backgroundColor={"#5b2a2e3c"}
                     onClick={() => router.push("/")}
                   >
                     <Text>Sign in</Text>
                   </Button>
-                </Box>
+                </Box> */}
               </Box>
             </Box>
           </Box>

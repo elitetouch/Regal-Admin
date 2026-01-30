@@ -17,6 +17,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { getSingleProduct } from "@/app/Components/Api/GetApi";
+
 type InputComponentProps = {
   name: string;
   placing: string;
@@ -151,7 +152,7 @@ const FileUploadComponent = ({
 );
 
 function Page() {
-  const queryClient = useQueryClient();
+  const queryClient: any = useQueryClient();
   const searchParams = useSearchParams();
   const productId: any = searchParams.get("ProductId");
   console.log({ id: productId });
@@ -207,35 +208,69 @@ function Page() {
     }
   };
   const editProductFunction = async (values: addProductTypes) => {
+    if (!singleProduct) return;
+
     setLoading(true);
     const formData = new FormData();
-    formData.append("name", values.productName);
-    formData.append("price", values.productPrice);
-    typeof values.ProductsImage === "object" &&
-      formData.append("image", values.ProductsImage);
-    formData.append("status", values.Productstatus);
-    try {
-      const resp = await Api_Instance.put(`/products/${productId}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
 
-      // Example: save token
-      resp && queryClient.invalidateQueries();
+    // ✅ Name
+    if (values.productName !== singleProduct.name) {
+      formData.append("name", values.productName);
+    }
+
+    // ✅ Price
+    if (values.productPrice !== singleProduct.price) {
+      formData.append("price", values.productPrice);
+    }
+
+    // ✅ Status
+    if (values.Productstatus !== singleProduct.status) {
+      formData.append("status", values.Productstatus);
+    }
+
+    // ✅ Image (only if a NEW file was selected)
+    if (values.ProductsImage instanceof File) {
+      formData.append("image", values.ProductsImage);
+    }
+
+    // 🚫 Nothing changed → stop request
+    if ([...formData.entries()].length === 0) {
+      toast({
+        title: "No changes detected",
+        status: "info",
+        duration: 3000,
+        position: "top-right",
+      });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const resp = await Api_Instance.patch(
+        `/products/${productId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+
+      queryClient.invalidateQueries(["products"]);
+
       toast({
         title: "Success",
-        description: "Product created successfully",
+        description: "Product updated successfully",
         status: "success",
         duration: 3000,
         isClosable: true,
         position: "top-right",
       });
-      setLoading(false);
+
       router.push("/ProductPages");
     } catch (error: any) {
       console.error(error);
-      setLoading(false);
+
       toast({
         title: "Error",
         description:
@@ -246,8 +281,11 @@ function Page() {
         isClosable: true,
         position: "top-right",
       });
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
     <div className="">
       <Formik
@@ -267,6 +305,7 @@ function Page() {
           //   router.push("/SignUp");
         }}
         validationSchema={AddProductSchemma}
+        validateOnMount
       >
         {({
           handleChange,

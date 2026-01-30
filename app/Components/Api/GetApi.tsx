@@ -30,3 +30,13 @@ export const getSingleProduct = (id: string) => {
   });
   return { isPending, error, data };
 };
+export const GenerateLink = (id: string) => {
+  const { isPending, error, data }: any = useQuery({
+    queryKey: ["ratingLink"],
+    queryFn: async () => {
+      const response = id && (await Api_Instance.get(`/ratings/link`));
+      return response;
+    },
+  });
+  return { isPending, error, data };
+};

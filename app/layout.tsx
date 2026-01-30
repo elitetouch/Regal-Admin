@@ -4,7 +4,7 @@ import "./globals.css";
 import { Suspense } from "react";
 import Loading from "./Components/loading";
 import ClientProviders from "./Components/ProjectWrap/ProjectWrap";
-
+//import imp from './public/regallog.svg'
 const prompt = Prompt({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
@@ -20,6 +20,9 @@ const raleway = Raleway({
 export const metadata: Metadata = {
   title: "Regal",
   description: "Fitted by Regal",
+  icons: {
+    icon: "/regallog.svg",
+  },
 };
 
 export default function RootLayout({
